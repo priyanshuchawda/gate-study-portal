@@ -7,7 +7,6 @@ import type { FormulaSection, Subject } from "@/lib/study-data";
 type Exam = "DA" | "CSE";
 type View = "checklist" | "formulas";
 type Progress = Record<string, boolean>;
-type AuthMode = "login" | "register";
 
 const initials = (name: string) => name.trim().slice(0, 2).toUpperCase() || "G";
 const display = (text: string) => text.replace(/\*\*/g, "").replace(/`/g, "");
@@ -48,7 +47,6 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
   const [view, setView] = useState<View>("checklist");
   const [person, setPerson] = useState("");
   const [showPeople, setShowPeople] = useState(false);
-  const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [nameInput, setNameInput] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [authLoading, setAuthLoading] = useState(true);
@@ -84,7 +82,7 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
     event.preventDefault();
     setAuthMessage(""); setAuthLoading(true);
     try {
-      const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: authMode, name: nameInput }) });
+      const res = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: nameInput }) });
       const data = await res.json();
       if (!res.ok) { setAuthMessage(data.error || "Could not sign in."); return; }
       setPerson(data.user.name); setShowPeople(false); setSyncMessage("Cloud sync enabled");
@@ -94,7 +92,7 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
 
   async function signOut() {
     await fetch("/api/auth", { method: "DELETE" });
-    setPerson(""); setProgress({}); setShowPeople(false); setAuthMode("login"); setNameInput(""); setSyncMessage("");
+    setPerson(""); setProgress({}); setShowPeople(false); setNameInput(""); setSyncMessage("");
   }
 
   async function toggleTopic(id: string) {
@@ -125,7 +123,7 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
   return <main>
     <header className="topbar"><a className="brand" href="#top" aria-label="StudyDesk home"><span className="brand-mark">S</span><span>study<span>desk</span></span></a>
       <div className="profile-wrap"><button className="profile-button" onClick={() => setShowPeople(!showPeople)} disabled={authLoading}><span className="avatar">{initials(person)}</span><span>{person || (authLoading ? "Connecting…" : "Sign in")}</span><span className="chevron">⌄</span></button>
-        {showPeople && <div className="people-menu">{person ? <><p className="menu-label">YOUR PROFILE</p><p className="signed-in"><span className="mini-avatar">{initials(person)}</span>{person}</p><button className="add-person" onClick={signOut}>Switch profile</button><p className="menu-note">Your progress is synced across devices.</p></> : <><div className="auth-tabs"><button className={authMode === "login" ? "selected" : ""} onClick={() => { setAuthMode("login"); setAuthMessage(""); }}>Choose profile</button><button className={authMode === "register" ? "selected" : ""} onClick={() => { setAuthMode("register"); setAuthMessage(""); }}>Add profile</button></div><form className="auth-form" onSubmit={handleAuth}><input value={nameInput} onChange={(event) => setNameInput(event.target.value)} placeholder="Your first name" maxLength={24} autoComplete="username" required /><button className="add-person" type="submit" disabled={authLoading}>{authLoading ? "Please wait…" : authMode === "login" ? "Open my profile" : "Create my profile"}</button></form>{authMessage && <p className="auth-message">{authMessage}</p>}<p className="menu-note">Only two profiles can be created. Your progress is synced across devices.</p></>}</div>}</div>
+        {showPeople && <div className="people-menu">{person ? <><p className="menu-label">YOUR PROFILE</p><p className="signed-in"><span className="mini-avatar">{initials(person)}</span>{person}</p><button className="add-person" onClick={signOut}>Switch profile</button><p className="menu-note">Your progress is synced across devices.</p></> : <><p className="enter-name-prompt"><span>↓</span> Enter your name to continue</p><form className="auth-form" onSubmit={handleAuth}><input value={nameInput} onChange={(event) => setNameInput(event.target.value)} placeholder="Enter your name" maxLength={24} autoComplete="username" autoFocus required /><button className="add-person" type="submit" disabled={authLoading}>{authLoading ? "Please wait…" : "Continue to my profile"}</button></form>{authMessage && <p className="auth-message">{authMessage}</p>}<p className="menu-note">Your own name opens your own synced study progress.</p></>}</div>}</div>
     </header>
     <section className="hero" id="top"><div className="hero-copy"><p className="eyebrow">YOUR STUDY SPACE</p><h1>Study with <em>clarity.</em><br />Track with intent.</h1><p className="intro">A focused space for the two of you to finish the syllabus, one confident topic at a time.</p></div><div className="progress-card"><div className="progress-heading"><span>OVERALL PROGRESS</span><strong>{percent}%</strong></div><div className="progress-track"><span style={{ width: `${percent}%` }} /></div><p>{person ? `${complete} of ${allTopics.length} topics mastered` : "Sign in to track your personal progress"}</p>{person && <p className="sync-status">● {syncMessage}</p>}</div></section>
     <section className="controls" aria-label="Study controls"><div className="exam-switcher"><button className={exam === "DA" ? "active" : ""} onClick={() => setExam("DA")}>DA</button><button className={exam === "CSE" ? "active" : ""} onClick={() => setExam("CSE")}>CSE</button></div><nav className="view-tabs"><button className={view === "checklist" ? "active" : ""} onClick={() => setView("checklist")}>Checklist</button><button className={view === "formulas" ? "active" : ""} onClick={() => setView("formulas")}>Formula book</button></nav></section>

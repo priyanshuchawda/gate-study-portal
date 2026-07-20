@@ -53,15 +53,10 @@ export async function POST(request: NextRequest) {
     const name = cleanName(body.name);
     if (!name) return noStore({ error: "Use a valid name." }, 400);
     const users = await loadUsers();
-    let user: User | undefined;
-    if (body.action === "register") {
+    let user = users.value.find((item) => item.normalizedName === name.toLocaleLowerCase());
+    if (!user) {
       user = { id: randomUUID(), name, normalizedName: name.toLocaleLowerCase(), createdAt: new Date().toISOString() };
       await addUser(user);
-    } else if (body.action === "login") {
-      user = users.value.find((item) => item.normalizedName === name.toLocaleLowerCase());
-      if (!user) return noStore({ error: "That profile does not exist yet. Set it up first." }, 401);
-    } else {
-      return noStore({ error: "Invalid request." }, 400);
     }
 
     const response = noStore({ user: { id: user.id, name: user.name } });
