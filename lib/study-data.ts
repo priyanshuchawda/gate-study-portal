@@ -25,6 +25,10 @@ function file(name: string) {
   return path ? readFileSync(path, "utf8") : "";
 }
 
+function cleanSectionTitle(line: string) {
+  return line.replace(/^##\s*(?:\d+\.\s*|Section\s+\d+:\s*)/i, "");
+}
+
 export function getChecklist(exam: "DA" | "CSE") {
   const name = exam === "DA" ? "DA_Full_Topic_Checklist.md" : "CSE_Full_Topic_Checklist.md";
   const markdown = file(name);
@@ -37,11 +41,13 @@ export function getChecklist(exam: "DA" | "CSE") {
   for (const rawLine of markdown.split("\n")) {
     const line = rawLine.trim();
     if (line.startsWith("## ")) {
-      subject = { title: line.replace(/^##\s*\d+\.\s*/, ""), sections: [] };
+      subject = { title: cleanSectionTitle(line), sections: [] };
       subjects.push(subject);
       section = undefined;
-    } else if (line.startsWith("**") && line.includes("**") && subject) {
-      const title = line.replace(/^\*\*/, "").replace(/\*\*.*$/, "").trim();
+    } else if ((line.startsWith("### ") || (line.startsWith("**") && line.includes("**"))) && subject) {
+      const title = line.startsWith("### ")
+        ? line.slice(4).trim()
+        : line.replace(/^\*\*/, "").replace(/\*\*.*$/, "").trim();
       section = { title, topics: [] };
       subject.sections.push(section);
     } else if (line.startsWith("- [ ] ") && subject) {
@@ -66,7 +72,7 @@ export function getFormulaSections(exam: "DA" | "CSE") {
   for (const rawLine of markdown.split("\n")) {
     const line = rawLine.trimEnd();
     if (line.startsWith("## ")) {
-      current = { title: line.replace(/^##\s*\d+\.\s*/, ""), content: [] };
+      current = { title: cleanSectionTitle(line), content: [] };
       sections.push(current);
     } else if (current) {
       current.content.push(line);
