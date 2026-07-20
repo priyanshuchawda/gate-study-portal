@@ -1,13 +1,11 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { get } from "@vercel/blob";
 
 export type Topic = { id: string; name: string };
 export type Section = { title: string; topics: Topic[] };
 export type Subject = { title: string; sections: Section[] };
 export type FormulaSection = { title: string; content: string[] };
 
-const bundledNotes = join(process.cwd(), "data");
-const downloads = join(process.cwd(), "..", "Downloads");
+const contentPath = (name: string) => `studydesk/v1/content/${name}`;
 
 function slug(value: string) {
   return value
@@ -17,21 +15,18 @@ function slug(value: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-function file(name: string) {
-  // Bundled notes are used in production; Downloads is a convenient local fallback
-  // while new CSE notes are being prepared.
-  const paths = [join(bundledNotes, name), join(downloads, name)];
-  const path = paths.find(existsSync);
-  return path ? readFileSync(path, "utf8") : "";
+async function file(name: string) {
+  const result = await get(contentPath(name), { access: "private", useCache: true });
+  return result?.statusCode === 200 ? new Response(result.stream).text() : "";
 }
 
 function cleanSectionTitle(line: string) {
   return line.replace(/^##\s*(?:\d+\.\s*|Section\s+\d+:\s*)/i, "");
 }
 
-export function getChecklist(exam: "DA" | "CSE") {
+export async function getChecklist(exam: "DA" | "CSE") {
   const name = exam === "DA" ? "DA_Full_Topic_Checklist.md" : "CSE_Full_Topic_Checklist.md";
-  const markdown = file(name);
+  const markdown = await file(name);
   if (!markdown) return [] as Subject[];
 
   const subjects: Subject[] = [];
@@ -62,9 +57,9 @@ export function getChecklist(exam: "DA" | "CSE") {
   return subjects.filter((item) => item.sections.some((section) => section.topics.length));
 }
 
-export function getFormulaSections(exam: "DA" | "CSE") {
+export async function getFormulaSections(exam: "DA" | "CSE") {
   const name = exam === "DA" ? "DA_Formula_Sheet.md" : "CSE_Formula_Sheet.md";
-  const markdown = file(name);
+  const markdown = await file(name);
   if (!markdown) return [] as FormulaSection[];
 
   const sections: FormulaSection[] = [];

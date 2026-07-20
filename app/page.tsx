@@ -1,13 +1,20 @@
 import StudyPortal from "@/components/study-portal";
 import { getChecklist, getFormulaSections } from "@/lib/study-data";
 
-export default function Home() {
+export default async function Home() {
+  const [daSubjects, daFormulas, cseSubjects, cseFormulas] = await Promise.all([
+    getChecklist("DA"),
+    getFormulaSections("DA"),
+    getChecklist("CSE"),
+    getFormulaSections("CSE"),
+  ]);
+
   return (
     <StudyPortal
-      daSubjects={getChecklist("DA")}
-      daFormulas={getFormulaSections("DA")}
-      cseSubjects={getChecklist("CSE")}
-      cseFormulas={getFormulaSections("CSE")}
+      daSubjects={daSubjects}
+      daFormulas={daFormulas}
+      cseSubjects={cseSubjects}
+      cseFormulas={cseFormulas}
     />
   );
 }

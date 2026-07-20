@@ -14,14 +14,7 @@ Live site: https://study-desk-da-cse.vercel.app
 
 ## Notes and progress
 
-The study content is bundled from Markdown files in `data/`:
-
-- `CSE_Full_Topic_Checklist.md`
-- `CSE_Formula_Sheet.md`
-- `DA_Full_Topic_Checklist.md`
-- `DA_Formula_Sheet.md`
-
-Progress and each profile's last selected study track are stored in a private Vercel Blob store. Profiles are intended for a small, trusted study group and use a name-only sign-in flow.
+The study content, progress, and each profile's last selected study track are stored in a private Vercel Blob store. The repository contains the application code only. Profiles are intended for a small, trusted study group and use a name-only sign-in flow.
 
 ## Run locally
 
