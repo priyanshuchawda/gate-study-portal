@@ -4,7 +4,7 @@
 
 ---
 
-## 1. PROBABILITY & STATISTICS (highest weight — learn this sheet cold)
+## 1. Probability & Statistics
 
 ### Basic probability rules
 - $P(A\cup B) = P(A)+P(B)-P(A\cap B)$ [Unseen]
@@ -70,7 +70,7 @@
 
 ---
 
-## 2. LINEAR ALGEBRA
+## 2. Linear Algebra
 
 ### Matrix arithmetic basics
 - $(AB)^T=B^TA^T$ [Unseen]
@@ -120,7 +120,7 @@
 
 ---
 
-## 3. CALCULUS & OPTIMIZATION
+## 3. Calculus & Optimization
 
 ### Limits
 - $\lim_{x\to0}\frac{\sin x}{x}=1$; $\lim_{n\to\infty}(1+\frac1n)^n=e$ [Unseen]
@@ -150,7 +150,7 @@
 
 ---
 
-## 4. PROGRAMMING & DSA
+## 4. Programming & Data Structures
 
 ### Python semantics (your actual risk zone — not raw algorithms)
 - **Mutable default argument trap**: `def f(x, lst=[])` — the default list is created ONCE at function definition, and persists/mutates across calls [Tested] (2026 Q16)
@@ -202,7 +202,7 @@
 
 ---
 
-## 5. DBMS & DATA WAREHOUSING
+## 5. Database Systems & Data Warehousing
 
 ### Functional Dependencies — Armstrong's Axioms
 - **Reflexivity**: if $Y\subseteq X$ then $X\to Y$
@@ -242,7 +242,7 @@
 
 ---
 
-## 6. MACHINE LEARNING
+## 6. Machine Learning
 
 ### Regression
 - **OLS closed-form**: $w=(X^TX)^{-1}X^Ty$ [Tested] (2025 Q34 — least squares fit)
@@ -285,7 +285,7 @@
 
 ---
 
-## 7. ARTIFICIAL INTELLIGENCE
+## 7. Artificial Intelligence
 
 ### Uninformed & Informed Search
 - BFS/DFS/Uniform-Cost Search = uninformed; A* = informed (uses heuristic) [Tested] (2026 Q13)
@@ -313,7 +313,7 @@
 
 ---
 
-## 8. DEEP LEARNING (low weight, ~1 Q/year — but make it a guaranteed easy mark)
+## 8. Deep Learning
 
 - Neuron output: $y=\phi(w^Tx+b)$, $\phi$ = activation function [Tested] (2025 Q42, 2024 Q43)
 - **ReLU**: $R(x)=\max(0,x)$ — continuous everywhere, differentiable everywhere EXCEPT $x=0$, monotonically non-decreasing, NOT bounded above [Tested] (2025 Q48 — exact TRUE/FALSE statement set)
@@ -325,7 +325,7 @@
 
 ---
 
-## 9. GENERAL APTITUDE (15 marks fixed — formula-light, speed-heavy)
+## 9. General Aptitude
 
 ### Quantitative
 - Percentage, profit/loss: $\%\Delta = \frac{\text{new}-\text{old}}{\text{old}}\times100$ [Tested] (2025 Q5 — rectangle L,W % change)

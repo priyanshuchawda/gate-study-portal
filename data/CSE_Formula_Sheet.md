@@ -4,7 +4,7 @@
 
 ---
 
-## 1. PROGRAMMING & DATA STRUCTURES + ALGORITHMS (highest combined weight — learn this sheet cold)
+## 1. Programming, Data Structures & Algorithms
 
 ### C semantics — your actual risk zone, not raw algorithms
 - **Pointer/type mismatches**: assigning a string literal to `int*` vs `char*`, `sizeof` on pointers vs arrays — a `char *str1="Hello` vs `int *str3="Hello"` validity question tested this exactly [Tested] (2026 CS1 Q27)
@@ -83,7 +83,7 @@
 
 ---
 
-## 2. ENGINEERING MATHEMATICS
+## 2. Engineering Mathematics
 
 ### Discrete Math — Sets, Functions, Relations, Posets/Lattices
 - $|A\cup B|=|A|+|B|-|A\cap B|$ [Unseen] (used implicitly, not asked as a bare identity)
@@ -147,7 +147,7 @@
 
 ---
 
-## 3. COMPUTER ORGANIZATION & ARCHITECTURE (heaviest calculation load in the paper)
+## 3. Computer Organization & Architecture
 
 ### Cache & Memory Hierarchy
 - **AMAT-style multi-level cache access time**: L1 hit time + L1 miss rate × (L2 hit time + L2 miss rate × main memory time) — tested via a two-level (L1/L2) cache-and-main-memory diagram, compute average access time in ns [Tested] (2025 CS1 Q53 — two-level hierarchy lookup order, 2025 CS2 Q55 — L1/L2 access times + hit rate, numeric AMAT computation)
@@ -185,7 +185,7 @@
 
 ---
 
-## 4. OPERATING SYSTEMS
+## 4. Operating Systems
 
 ### CPU Scheduling
 - **Turnaround time = Completion time − Arrival time**; **Waiting time = Turnaround time − Burst time** — average-turnaround/waiting-time computation across a process set with given arrival+burst times, multiple times across years [Tested] (2024 CS2 Q37 — SJF-style single processor; 2025 CS1 Q38 — two processors M1/M2, four processes; 2025 CS2 Q26 — four processes with staggered arrivals; 2026 CS1 Q64 — two process types Actuators/Controllers with different burst patterns)
@@ -220,7 +220,7 @@
 
 ---
 
-## 5. DATABASES
+## 5. Databases
 
 ### Functional Dependencies & Normalization
 - **Armstrong's axioms** (reflexivity, augmentation, transitivity) — implicitly used in every FD-implication question: "$(X,Y)\to(Z,W)$ implies $X\to Z$" style TRUE/FALSE reasoning [Tested] (2024 CS1 Q44, 2026 CS1 Q30)
@@ -258,7 +258,7 @@
 
 ---
 
-## 6. COMPUTER NETWORKS
+## 6. Computer Networks
 
 ### Layering & OSI
 - **OSI layer-to-functionality matching**: e.g., Network layer ↔ packet routing — direct matching-list question [Tested] (2025 CS1 Q16)
@@ -298,7 +298,7 @@
 
 ---
 
-## 7. DIGITAL LOGIC
+## 7. Digital Logic
 
 ### Boolean Algebra & Minimization
 - **Boolean algebra core properties/laws** (absorption, complement, idempotent) — TRUE/FALSE identification of valid vs invalid laws [Tested] (2024 CS2 Q30, 2026 CS2 Q16)
@@ -323,7 +323,7 @@
 
 ---
 
-## 8. THEORY OF COMPUTATION
+## 8. Theory of Computation
 
 ### Finite Automata & Regular Languages
 - **DFA/NFA equivalence and minimization**: an NFA with $n$ states, minimal-DFA state-count constraints (which counts are IMPOSSIBLE for the minimized DFA) [Tested] (2026 CS1 Q26)
@@ -352,7 +352,7 @@
 
 ---
 
-## 9. COMPILER DESIGN (smallest syllabus — fastest to finish)
+## 9. Compiler Design
 
 ### Lexical Analysis & Symbol Tables
 - **Symbol table responsibilities**: tracks variable scope, type info — FALSE-statement identification about what it does/doesn't do [Tested] (2025 CS1 Q12)
@@ -381,7 +381,7 @@
 
 ---
 
-## 10. GENERAL APTITUDE (15 marks, fixed — formula-light, pattern-heavy)
+## 10. General Aptitude
 
 ### Quantitative
 - **Percentage/ratio word problems**: coin-denomination ratio + total-amount split [Tested] (2024 CS1 Q4); profit/loss on two items sold at the same price, one at +10%, one at −10% (net is always a small loss — classic trap) [Tested] (2024 CS2 Q7)
@@ -423,4 +423,3 @@
 4. **MSQ-format awareness**: a large fraction of the [Tested] questions above are multi-select (MSQ) "which of the following is/are TRUE" format with no partial credit — this rewards knowing *why* a statement is false (e.g., "2PL prevents deadlocks" is a classic false trap) over rote formula recall.
 5. Make a **single physical/digital page per subject** from this sheet and re-derive (don't just re-read) each formula once a week until exam.
 6. **Genuine blind spots to prioritize now** — explicitly named in the official syllabus but not directly tested in these 3 papers, so they're the most likely source of a "why didn't I know this" moment: Pumping Lemma (regular AND context-free versions), Bayes' theorem stated formally, Mean Value Theorem, pigeonhole principle, Amdahl's Law, NP-completeness/polynomial-time-reduction reasoning, Banker's algorithm full safety-check simulation, BCNF isolated from 3NF, and runtime-environment/activation-record structure in Compiler Design. Everything else on this sheet has direct PYQ backing.
-

@@ -1,6 +1,7 @@
 import { BlobPreconditionFailedError, get, put } from "@vercel/blob";
 
 export type User = { id: string; name: string; normalizedName: string; createdAt: string };
+export type StudyTrack = "DA" | "CSE";
 type Stored<T> = { value: T; etag?: string };
 
 const usersPath = "studydesk/v1/users.json";
@@ -41,6 +42,7 @@ export async function addUser(user: User) {
 }
 
 const progressPath = (userId: string) => `studydesk/v1/progress/${userId}.json`;
+const preferencesPath = (userId: string) => `studydesk/v1/preferences/${userId}.json`;
 
 export async function loadProgress(userId: string) {
   return readJson<Record<string, boolean>>(progressPath(userId), {});
@@ -70,4 +72,21 @@ export async function clearProgress(userId: string) {
       if (!(error instanceof BlobPreconditionFailedError) || attempt === 2) throw error;
     }
   }
+}
+
+export async function loadPreferences(userId: string) {
+  return readJson<{ lastExam?: StudyTrack }>(preferencesPath(userId), {});
+}
+
+export async function saveLastExam(userId: string, lastExam: StudyTrack) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const preferences = await loadPreferences(userId);
+    try {
+      await writeJson(preferencesPath(userId), { ...preferences.value, lastExam }, preferences.etag);
+      return lastExam;
+    } catch (error) {
+      if (!(error instanceof BlobPreconditionFailedError) || attempt === 2) throw error;
+    }
+  }
+  throw new Error("Could not save study preference.");
 }

@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   try {
     const users = await loadUsers();
     const user = currentUser(request, users.value);
-    return noStore({ user: user ? { id: user.id, name: user.name } : null, hasProfiles: users.value.length > 0, capacityReached: users.value.length >= 2 });
+    return noStore({ user: user ? { id: user.id, name: user.name } : null, hasProfiles: users.value.length > 0, capacityReached: users.value.length >= 20 });
   } catch {
     return noStore({ error: "Cloud sync is temporarily unavailable." }, 503);
   }
