@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
+import { FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import katex from "katex";
 import type { FormulaSection, Subject } from "@/lib/study-data";
 
@@ -56,12 +56,19 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
   const [syncMessage, setSyncMessage] = useState("");
   const [openSubject, setOpenSubject] = useState<string | null>(null);
   const [formulaQuery, setFormulaQuery] = useState("");
+  const progressRef = useRef<Progress>({});
+  const progressSaveQueue = useRef(Promise.resolve());
 
   const subjects = exam === "DA" ? daSubjects : cseSubjects;
   const formulas = exam === "DA" ? daFormulas : cseFormulas;
   const allTopics = useMemo(() => subjects.flatMap((subject) => subject.sections.flatMap((section) => section.topics)), [subjects]);
   const complete = allTopics.filter((topic) => progress[topic.id]).length;
   const percent = allTopics.length ? Math.round((complete / allTopics.length) * 100) : 0;
+
+  function updateProgress(nextProgress: Progress) {
+    progressRef.current = nextProgress;
+    setProgress(nextProgress);
+  }
 
   useEffect(() => {
     fetch("/api/auth", { cache: "no-store" }).then(async (res) => {
@@ -79,11 +86,11 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
   }, []);
 
   useEffect(() => {
-    if (!person) { setProgress({}); return; }
+    if (!person) { updateProgress({}); return; }
     fetch("/api/progress", { cache: "no-store" }).then(async (res) => {
       const data = await res.json();
       if (res.ok) {
-        setProgress(data.progress);
+        updateProgress({ ...data.progress, ...progressRef.current });
         if (data.lastExam === "DA" || data.lastExam === "CSE") setExam(data.lastExam);
         setSyncMessage("Secure cloud sync enabled");
       }
@@ -105,20 +112,33 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
 
   async function signOut() {
     await fetch("/api/auth", { method: "DELETE" });
-    setPerson(""); setProgress({}); setShowPeople(false); setNameInput(""); setSyncMessage("");
+    setPerson(""); updateProgress({}); setShowPeople(false); setNameInput(""); setSyncMessage("");
   }
 
   async function toggleTopic(id: string) {
     if (!person) { setShowPeople(true); return; }
-    const previous = progress;
-    const completed = !progress[id];
-    setProgress({ ...progress, [id]: completed }); setSyncMessage("Saving…");
-    try {
-      const res = await fetch("/api/progress", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topicId: id, completed }) });
+    const completed = !progressRef.current[id];
+    updateProgress({ ...progressRef.current, [id]: completed });
+    setSyncMessage("Saving…");
+
+    const save = progressSaveQueue.current.then(async () => {
+      const res = await fetch("/api/progress", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topicId: id, completed }),
+      });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setProgress(data.progress); setSyncMessage("Saved to your cloud profile");
-    } catch (error) { setProgress(previous); setSyncMessage(error instanceof Error ? error.message : "Could not save progress."); }
+      if (!res.ok) throw new Error(data.error || "Could not save progress.");
+      setSyncMessage("Saved to your cloud profile");
+    });
+
+    progressSaveQueue.current = save.catch((error) => {
+      if (progressRef.current[id] === completed) {
+        updateProgress({ ...progressRef.current, [id]: !completed });
+      }
+      setSyncMessage(error instanceof Error ? error.message : "Could not save progress.");
+    });
+    await save.catch(() => undefined);
   }
 
   function selectExam(nextExam: Exam) {
