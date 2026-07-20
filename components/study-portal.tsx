@@ -6,6 +6,7 @@ import type { FormulaSection, Subject } from "@/lib/study-data";
 
 type Exam = "DA" | "CSE";
 type View = "checklist" | "formulas";
+type Theme = "light" | "dark";
 type Progress = Record<string, boolean>;
 
 const initials = (name: string) => name.trim().slice(0, 2).toUpperCase() || "G";
@@ -45,6 +46,7 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
 }) {
   const [exam, setExam] = useState<Exam>("CSE");
   const [view, setView] = useState<View>("checklist");
+  const [theme, setTheme] = useState<Theme>("light");
   const [person, setPerson] = useState("");
   const [showPeople, setShowPeople] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -67,6 +69,13 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
       if (res.ok && data.user) setPerson(data.user.name);
       if (!res.ok) setAuthMessage(data.error || "Cloud sync is unavailable.");
     }).catch(() => setAuthMessage("Cloud sync is unavailable.")).finally(() => setAuthLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem("studydesk-theme");
+    if (savedTheme !== "dark") return;
+    setTheme("dark");
+    document.documentElement.dataset.theme = "dark";
   }, []);
 
   useEffect(() => {
@@ -126,16 +135,24 @@ export default function StudyPortal({ daSubjects, daFormulas, cseSubjects, cseFo
     });
   }
 
+  function toggleTheme() {
+    const nextTheme: Theme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    document.documentElement.dataset.theme = nextTheme;
+    window.localStorage.setItem("studydesk-theme", nextTheme);
+  }
+
   const filteredFormulas = formulas.filter((formula) => `${formula.title} ${formula.content.join(" ")}`.toLowerCase().includes(formulaQuery.toLowerCase()));
 
   return <main>
     <header className="topbar"><a className="brand" href="#top" aria-label="StudyDesk home"><span className="brand-mark">S</span><span>study<span>desk</span></span></a>
-      <div className="profile-wrap"><button className="profile-button" onClick={() => setShowPeople(!showPeople)} disabled={authLoading}><span className="avatar">{initials(person)}</span><span>{person || (authLoading ? "Connecting…" : "Sign in")}</span><span className="chevron">⌄</span></button>
+      <div className="topbar-actions"><button className="theme-toggle" type="button" onClick={toggleTheme} aria-pressed={theme === "dark"}>{theme === "light" ? "Dark mode" : "Light mode"}</button><div className="profile-wrap"><button className="profile-button" onClick={() => setShowPeople(!showPeople)} disabled={authLoading}><span className="avatar">{initials(person)}</span><span>{person || (authLoading ? "Connecting…" : "Sign in")}</span><span className="chevron">⌄</span></button>
         {showPeople && <div className="people-menu">{person ? <><p className="menu-label">YOUR PROFILE</p><p className="signed-in"><span className="mini-avatar">{initials(person)}</span>{person}</p><button className="add-person" onClick={signOut}>Switch profile</button><p className="menu-note">Your progress is synced across devices.</p></> : <><p className="enter-name-prompt"><span>↓</span> Enter your name to continue</p><form className="auth-form" onSubmit={handleAuth}><input value={nameInput} onChange={(event) => setNameInput(event.target.value)} placeholder="Enter your name" maxLength={24} autoComplete="username" autoFocus required /><button className="add-person" type="submit" disabled={authLoading}>{authLoading ? "Please wait…" : "Continue to my profile"}</button></form>{authMessage && <p className="auth-message">{authMessage}</p>}<p className="menu-note">Your own name opens your synced study progress. Up to 20 profiles.</p></>}</div>}</div>
+      </div>
     </header>
     <section className="hero" id="top"><div className="hero-copy"><p className="eyebrow">YOUR STUDY SPACE</p><h1>Study with <em>clarity.</em><br />Track with intent.</h1><p className="intro">A focused space for the two of you to finish the syllabus, one confident topic at a time.</p></div><div className="progress-card"><div className="progress-heading"><span>OVERALL PROGRESS</span><strong>{percent}%</strong></div><div className="progress-track"><span style={{ width: `${percent}%` }} /></div><p>{person ? `${complete} of ${allTopics.length} topics mastered` : "Sign in to track your personal progress"}</p>{person && <p className="sync-status">● {syncMessage}</p>}</div></section>
     <section className="controls" aria-label="Study controls"><div className="exam-switcher"><button className={exam === "DA" ? "active" : ""} onClick={() => selectExam("DA")}>DA</button><button className={exam === "CSE" ? "active" : ""} onClick={() => selectExam("CSE")}>CSE</button></div><nav className="view-tabs"><button className={view === "checklist" ? "active" : ""} onClick={() => setView("checklist")}>Checklist</button><button className={view === "formulas" ? "active" : ""} onClick={() => setView("formulas")}>Formula book</button></nav></section>
-    {subjects.length === 0 ? <section className="empty-state"><span className="empty-icon">+</span><p className="eyebrow">READY WHEN YOU ARE</p><h2>CSE notes are waiting.</h2><p>Add <code>CSE_Full_Topic_Checklist.md</code> and <code>CSE_Formula_Sheet.md</code> to the project’s <code>data/</code> folder, then redeploy.</p></section> : view === "checklist" ? <section className="subject-grid">{subjects.map((subject, subjectIndex) => {
+    {subjects.length === 0 ? <section className="empty-state"><span className="empty-icon">+</span><p className="eyebrow">PLEASE TRY AGAIN</p><h2>Study content is temporarily unavailable.</h2><p>Refresh the page in a moment. Your saved progress is unaffected.</p></section> : view === "checklist" ? <section className="subject-grid">{subjects.map((subject, subjectIndex) => {
       const topics = subject.sections.flatMap((section) => section.topics); const done = topics.filter((topic) => progress[topic.id]).length; const subjectPercent = topics.length ? Math.round((done / topics.length) * 100) : 0; const isOpen = openSubject === subject.title;
       return <article className={`subject-card ${isOpen ? "open" : ""}`} key={subject.title}><button className="subject-head" onClick={() => setOpenSubject(isOpen ? "" : subject.title)}><span className="subject-number">{String(subjectIndex + 1).padStart(2, "0")}</span><span className="subject-title"><strong><MathText text={display(subject.title)} /></strong><small>{done}/{topics.length} topics complete</small><span className="subject-track"><span style={{ width: `${subjectPercent}%` }} /></span></span><span className="subject-percent">{subjectPercent}%</span><span className="plus">{isOpen ? "−" : "+"}</span></button>{isOpen && <div className="topics">{subject.sections.map((section) => <div className="topic-group" key={section.title}><h2><MathText text={display(section.title)} /></h2>{section.topics.map((topic) => <label className={`topic ${progress[topic.id] ? "checked" : ""}`} key={topic.id}><input type="checkbox" checked={Boolean(progress[topic.id])} onChange={() => toggleTopic(topic.id)} /><span className="custom-check">✓</span><span><MathText text={display(topic.name)} /></span></label>)}</div>)}</div>}</article>;
     })}</section> : <section className="formula-area"><div className="formula-tools"><div><p className="eyebrow">QUICK REFERENCE</p><h2>{exam === "DA" ? "DA formula book" : "CSE formula book"}</h2></div><input className="formula-search" value={formulaQuery} onChange={(event) => setFormulaQuery(event.target.value)} placeholder="Search a formula or topic" /></div><div className="formula-list">{filteredFormulas.map((formula) => <details className="formula-section" key={formula.title} open={formulaQuery.length > 0}><summary><MathText text={display(formula.title)} /> <span className="summary-toggle">+</span></summary><FormulaContent lines={formula.content} /></details>)}</div></section>}
