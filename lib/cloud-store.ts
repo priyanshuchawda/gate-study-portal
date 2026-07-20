@@ -44,22 +44,24 @@ export async function addUser(user: User) {
 const progressPath = (userId: string) => `studydesk/v1/progress/${userId}.json`;
 const preferencesPath = (userId: string) => `studydesk/v1/preferences/${userId}.json`;
 
+async function writeProgress(userId: string, value: Record<string, boolean>) {
+  return put(progressPath(userId), JSON.stringify(value), {
+    access: "private",
+    allowOverwrite: true,
+    cacheControlMaxAge: 60,
+    contentType: "application/json",
+  });
+}
+
 export async function loadProgress(userId: string) {
   return readJson<Record<string, boolean>>(progressPath(userId), {});
 }
 
 export async function updateTopic(userId: string, topicId: string, completed: boolean) {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const progress = await loadProgress(userId);
-    const next = { ...progress.value, [topicId]: completed };
-    try {
-      await writeJson(progressPath(userId), next, progress.etag);
-      return next;
-    } catch (error) {
-      if (!(error instanceof BlobPreconditionFailedError) || attempt === 2) throw error;
-    }
-  }
-  throw new Error("Could not save progress.");
+  const progress = await loadProgress(userId);
+  const next = { ...progress.value, [topicId]: completed };
+  await writeProgress(userId, next);
+  return next;
 }
 
 export async function clearProgress(userId: string) {
